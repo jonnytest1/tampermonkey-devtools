@@ -22,7 +22,7 @@ if(location.href.startsWith("https://jonnytest1.github.io/tampermonkey-devtools/
     type = "client"
 
 }
-let active = false
+let active = true
 let messageMap = {}
 let messageId = 0
 let handlers = {}
@@ -89,7 +89,15 @@ if(type == "client") {
 
         }
         const root = createTree(dom)
-        document.body.replaceWith(root);
+        const selectBtn = document.createElement("button")
+        selectBtn.textContent = "select element";
+        selectBtn.onclick = async () => {
+            send({ type: "selectelement" }).then(data => {
+                debugger;
+            })
+        }
+        document.body.replaceChildren(root);
+        document.body.insertBefore(selectBtn, root)
     })
 } else {
     handlers["init"] = () => {
@@ -112,5 +120,14 @@ if(type == "client") {
         }
         iterateDom(dom)
         return dom
+    };
+    handlers["selectelement"] = () => {
+        return new Promise(res => {
+            function onclck(e) {
+                res(e.target.textContent);
+                document.removeEventListener("click", onclck);
+            }
+            document.addEventListener("click", onclck, true);
+        })
     };
 }
